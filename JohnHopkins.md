@@ -4,6 +4,33 @@ N.L
 10/14/2021
 
 ``` r
+#Follow the steps of the Prof. to insert the data frame into RMD
+library(tidyverse)
+```
+
+    ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──
+
+    ## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
+    ## ✓ tibble  3.1.4     ✓ dplyr   1.0.7
+    ## ✓ tidyr   1.1.3     ✓ stringr 1.4.0
+    ## ✓ readr   2.0.1     ✓ forcats 0.5.1
+
+    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+    ## x dplyr::filter() masks stats::filter()
+    ## x dplyr::lag()    masks stats::lag()
+
+``` r
+url_in <- "http://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/"
+file_names <-c("time_series_covid19_confirmed_global.csv",
+               "time_series_covid19_deaths_global.csv",
+               "time_series_covid19_confirmed_US.csv",
+               "time_series_covid19_deaths_US.csv")
+library(stringr)
+urls <- str_c(url_in,file_names) 
+library(tidyverse)
+```
+
+``` r
 global_cases <- read_csv(urls[1])
 ```
 
@@ -50,4 +77,109 @@ US_cases <- read_csv(urls[3])
 
 ``` r
 US_deaths<- read.csv(urls[4])
+
+global_cases <-global_cases %>%
+pivot_longer(cols = -c(`Province/State`,                  `Country/Region`, Lat,Long),
+names_to = "date",
+values_to = "cases") %>%
+select(-c(Lat,Long))
+global_cases
 ```
+
+    ## # A tibble: 176,049 × 4
+    ##    `Province/State` `Country/Region` date    cases
+    ##    <chr>            <chr>            <chr>   <dbl>
+    ##  1 <NA>             Afghanistan      1/22/20     0
+    ##  2 <NA>             Afghanistan      1/23/20     0
+    ##  3 <NA>             Afghanistan      1/24/20     0
+    ##  4 <NA>             Afghanistan      1/25/20     0
+    ##  5 <NA>             Afghanistan      1/26/20     0
+    ##  6 <NA>             Afghanistan      1/27/20     0
+    ##  7 <NA>             Afghanistan      1/28/20     0
+    ##  8 <NA>             Afghanistan      1/29/20     0
+    ##  9 <NA>             Afghanistan      1/30/20     0
+    ## 10 <NA>             Afghanistan      1/31/20     0
+    ## # … with 176,039 more rows
+
+``` r
+global_deaths <-global_deaths %>%
+pivot_longer(cols = -c(`Province/State`,                  `Country/Region`, Lat,Long),
+names_to = "date",
+values_to = "deaths") %>%
+select(-c(Lat,Long))
+global_deaths
+```
+
+    ## # A tibble: 176,049 × 4
+    ##    `Province/State` `Country/Region` date    deaths
+    ##    <chr>            <chr>            <chr>    <dbl>
+    ##  1 <NA>             Afghanistan      1/22/20      0
+    ##  2 <NA>             Afghanistan      1/23/20      0
+    ##  3 <NA>             Afghanistan      1/24/20      0
+    ##  4 <NA>             Afghanistan      1/25/20      0
+    ##  5 <NA>             Afghanistan      1/26/20      0
+    ##  6 <NA>             Afghanistan      1/27/20      0
+    ##  7 <NA>             Afghanistan      1/28/20      0
+    ##  8 <NA>             Afghanistan      1/29/20      0
+    ##  9 <NA>             Afghanistan      1/30/20      0
+    ## 10 <NA>             Afghanistan      1/31/20      0
+    ## # … with 176,039 more rows
+
+``` r
+library(lubridate)
+```
+
+    ## 
+    ## Attaching package: 'lubridate'
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     date, intersect, setdiff, union
+
+``` r
+global <-global_cases %>%
+  full_join(global_deaths) %>%
+  rename(Country_Region = `Country/Region`,
+         Province_State = `Province/State`) %>%
+  mutate(date = mdy(date))
+```
+
+    ## Joining, by = c("Province/State", "Country/Region", "date")
+
+``` r
+global
+```
+
+    ## # A tibble: 176,049 × 5
+    ##    Province_State Country_Region date       cases deaths
+    ##    <chr>          <chr>          <date>     <dbl>  <dbl>
+    ##  1 <NA>           Afghanistan    2020-01-22     0      0
+    ##  2 <NA>           Afghanistan    2020-01-23     0      0
+    ##  3 <NA>           Afghanistan    2020-01-24     0      0
+    ##  4 <NA>           Afghanistan    2020-01-25     0      0
+    ##  5 <NA>           Afghanistan    2020-01-26     0      0
+    ##  6 <NA>           Afghanistan    2020-01-27     0      0
+    ##  7 <NA>           Afghanistan    2020-01-28     0      0
+    ##  8 <NA>           Afghanistan    2020-01-29     0      0
+    ##  9 <NA>           Afghanistan    2020-01-30     0      0
+    ## 10 <NA>           Afghanistan    2020-01-31     0      0
+    ## # … with 176,039 more rows
+
+``` r
+summary(global)
+```
+
+    ##  Province_State     Country_Region          date                cases         
+    ##  Length:176049      Length:176049      Min.   :2020-01-22   Min.   :       0  
+    ##  Class :character   Class :character   1st Qu.:2020-06-27   1st Qu.:     153  
+    ##  Mode  :character   Mode  :character   Median :2020-12-02   Median :    2530  
+    ##                                        Mean   :2020-12-02   Mean   :  307400  
+    ##                                        3rd Qu.:2021-05-09   3rd Qu.:   57965  
+    ##                                        Max.   :2021-10-13   Max.   :44684150  
+    ##      deaths      
+    ##  Min.   :     0  
+    ##  1st Qu.:     1  
+    ##  Median :    40  
+    ##  Mean   :  7006  
+    ##  3rd Qu.:   958  
+    ##  Max.   :719558
