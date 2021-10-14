@@ -183,3 +183,68 @@ summary(global)
     ##  Mean   :  7006  
     ##  3rd Qu.:   958  
     ##  Max.   :719558
+
+``` r
+global <- global %>% filter(cases > 0)
+
+global %>% filter(cases > 44000000)
+```
+
+    ## # A tibble: 8 × 5
+    ##   Province_State Country_Region date          cases deaths
+    ##   <chr>          <chr>          <date>        <dbl>  <dbl>
+    ## 1 <NA>           US             2021-10-06 44058827 708110
+    ## 2 <NA>           US             2021-10-07 44158910 710502
+    ## 3 <NA>           US             2021-10-08 44290052 712339
+    ## 4 <NA>           US             2021-10-09 44317989 712618
+    ## 5 <NA>           US             2021-10-10 44340183 712873
+    ## 6 <NA>           US             2021-10-11 44456385 714055
+    ## 7 <NA>           US             2021-10-12 44562693 716471
+    ## 8 <NA>           US             2021-10-13 44684150 719558
+
+``` r
+US_cases <- US_cases %>%
+   pivot_longer(cols = -(UID:Combined_Key),
+                names_to = "date",
+                values_to = "cases") %>%
+   select(Admin2:cases) %>%
+   mutate(date = mdy(date)) %>%
+   select(-c(Lat,Long_))
+
+US_deaths <- US_deaths %>%
+   pivot_longer(cols = -(UID:Population),
+                names_to = "date",
+                values_to = "deaths") %>%
+   select(Admin2:deaths) %>%
+   mutate(date = mdy(date)) %>%
+   select(-c(Lat,Long_))
+```
+
+    ## Warning: All formats failed to parse. No formats found.
+
+``` r
+global <- global %>%
+   unite("Combined_Key",
+         c(Province_State, Country_Region),
+         sep = ",",
+         na.rm = TRUE,
+         remove = FALSE)
+
+
+global
+```
+
+    ## # A tibble: 159,988 × 6
+    ##    Combined_Key Province_State Country_Region date       cases deaths
+    ##    <chr>        <chr>          <chr>          <date>     <dbl>  <dbl>
+    ##  1 Afghanistan  <NA>           Afghanistan    2020-02-24     5      0
+    ##  2 Afghanistan  <NA>           Afghanistan    2020-02-25     5      0
+    ##  3 Afghanistan  <NA>           Afghanistan    2020-02-26     5      0
+    ##  4 Afghanistan  <NA>           Afghanistan    2020-02-27     5      0
+    ##  5 Afghanistan  <NA>           Afghanistan    2020-02-28     5      0
+    ##  6 Afghanistan  <NA>           Afghanistan    2020-02-29     5      0
+    ##  7 Afghanistan  <NA>           Afghanistan    2020-03-01     5      0
+    ##  8 Afghanistan  <NA>           Afghanistan    2020-03-02     5      0
+    ##  9 Afghanistan  <NA>           Afghanistan    2020-03-03     5      0
+    ## 10 Afghanistan  <NA>           Afghanistan    2020-03-04     5      0
+    ## # … with 159,978 more rows
